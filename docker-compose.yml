@@ -1,0 +1,25 @@
+version: '3'
+services:
+  teruntu:
+    build: .
+    image: teruntu:dev001
+    ports: 
+      - 5901:5901
+    environment:
+      - PULSE_SERVER=docker.for.mac.localhost
+    volumes:
+      - type: bind
+        source: ~/.config/pulse
+        target: /home/teruntu/.config/pulse
+      - type: bind
+        source: ./dot_config/clipit
+        target: /home/teruntu/.config/clipit
+      - type: bind
+        source: ./dot_config/lxterminal
+        target: /home/teruntu/.config/lxterminal
+      - type: bind
+        source: ./dot_config/pcmanfm
+        target: /home/teruntu/.config/pcmanfm
+      - type: bind
+        source: /Users/masushin/work
+        target: /mnt/work
