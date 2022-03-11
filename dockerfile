@@ -12,17 +12,12 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     wget \
     git \
     autocutsel \
-    tigervnc-standalone-server tigervnc-xorg-extension \
-    pulseaudio
+    tigervnc-standalone-server tigervnc-xorg-extension
 
 # Install visual code
 WORKDIR /opt
 RUN curl -L https://go.microsoft.com/fwlink/?LinkID=760868 -o vscode.deb && \
     apt install ./vscode.deb
-
-# Chrome
-# RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-# RUN apt install ./google-chrome-stable_current_amd64.deb
 
 # Locale
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime \
@@ -35,11 +30,11 @@ ENV LANG=ja_JP.UTF-8 \
     LC_ALL=ja_JP.UTF-8
 
 # User
-ENV USER=teruntu \
+ENV USER=hogeuser \
     PASSWD=password
 
 RUN groupadd -g 1000 developer && \
-    useradd  -g      developer -G sudo -m -s /bin/bash teruntu && \
+    useradd  -g      developer -G sudo -m -s /bin/bash ${USER} && \
     echo $USER:$PASSWD | chpasswd
     
 RUN echo 'Defaults visiblepw' >> /etc/sudoers
@@ -53,10 +48,9 @@ RUN chmod +x /opt/start.sh
 
 USER ${USER}
 WORKDIR /home/${USER}
-RUN mkdir ~/.config && sudo chown ${USER}:developer ~/.config
 
 # Add alias for visual code
-RUN echo "alias code='code --no-sandbox'" >> ~/.bash_profile
+RUN echo "alias code='code --no-sandbox'" >> ~/.bash_aliases
 
 # Install homebrew
 RUN echo ${PASSWD} | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -64,7 +58,7 @@ RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /home/${USE
 ENV PATH $PATH:/home/linuxbrew/.linuxbrew/bin
 
 # Install asciinema
-RUN brew install asciinema
+RUN brew install asciinema; exit 0
 
 # Install anyenv and other env
 RUN git clone https://github.com/anyenv/anyenv ~/.anyenv
