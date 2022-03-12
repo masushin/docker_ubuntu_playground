@@ -13,7 +13,9 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     git \
     autocutsel \
     tigervnc-standalone-server tigervnc-xorg-extension \
-    pulseaudio
+    pulseaudio \
+    fonts-noto-color-emoji \
+    fish
 
 # Install visual code
 WORKDIR /opt
@@ -53,8 +55,8 @@ RUN chmod +x /opt/start.sh
 
 USER ${USER}
 WORKDIR /home/${USER}
-RUN mkdir ~/.config && sudo chown ${USER}:developer ~/.config
 
+RUN mkdir ~/.config && sudo chown ${USER}:developer ~/.config
 # Add alias for visual code
 RUN echo "alias code='code --no-sandbox'" >> ~/.bash_aliases
 
@@ -77,6 +79,18 @@ RUN anyenv install pyenv
 
 # fonts
 COPY others/fonts/UbuntuMono /home/${USER}/.fonts
+
+# desktop
+COPY lxterminal.desktop /home/${USER}/Desktop
+
+# fish
+RUN echo fish >> ~/.bashrc
+SHELL ["/usr/bin/fish", "-c"]
+RUN curl -sL https://git.io/fisher > .fisher && \ 
+    source .fisher && \
+    fisher install jorgebucaran/fisher && \
+    fisher install oh-my-fish/theme-eclm
+
 
 # Command
 CMD ["/opt/start.sh"]

@@ -2,7 +2,7 @@ version: '3'
 services:
   teruntu:
     build: .
-    image: teruntu:dev001
+    image: teruntu
     ports: 
       - 5901:5901
     environment:
