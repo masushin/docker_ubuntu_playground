@@ -18,6 +18,9 @@ services:
         source: ./dot_config/lxterminal
         target: /home/teruntu/.config/lxterminal
       - type: bind
+        source: ./dot_config/lxsession
+        target: /home/teruntu/.config/lxsession
+      - type: bind
         source: ./dot_config/pcmanfm
         target: /home/teruntu/.config/pcmanfm
       - type: bind

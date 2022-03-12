@@ -56,7 +56,7 @@ WORKDIR /home/${USER}
 RUN mkdir ~/.config && sudo chown ${USER}:developer ~/.config
 
 # Add alias for visual code
-RUN echo "alias code='code --no-sandbox'" >> ~/.bash_profile
+RUN echo "alias code='code --no-sandbox'" >> ~/.bash_aliases
 
 # Install homebrew
 RUN echo ${PASSWD} | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -64,7 +64,7 @@ RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /home/${USE
 ENV PATH $PATH:/home/linuxbrew/.linuxbrew/bin
 
 # Install asciinema
-RUN brew install asciinema
+RUN brew install asciinema; exit 0
 
 # Install anyenv and other env
 RUN git clone https://github.com/anyenv/anyenv ~/.anyenv
@@ -74,6 +74,9 @@ RUN anyenv init; exit 0
 RUN echo 'eval "$(anyenv init -)"' >> ~/.bash_profile
 RUN yes | anyenv install --init
 RUN anyenv install pyenv
+
+# fonts
+COPY others/fonts/UbuntuMono /home/${USER}/.fonts
 
 # Command
 CMD ["/opt/start.sh"]
