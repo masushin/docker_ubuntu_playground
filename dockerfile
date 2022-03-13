@@ -80,7 +80,8 @@ RUN anyenv install pyenv
 RUN anyenv install nodenv
 
 # fonts
-COPY others/fonts /home/${USER}/.fonts
+# COPY others/fonts /home/${USER}/.fonts
+RUN mkdir ~/.fonts && cd ~/.fonts && wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/UbuntuMono.zip && unzip UbuntuMono.zip && rm UbuntuMono.zip
 RUN sudo chown -R ${USER}:developer ~/.fonts
 
 # desktop
