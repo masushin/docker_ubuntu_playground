@@ -14,5 +14,4 @@ touch ${HOME}/.Xresources
 echo "#############################"
 
 ## Run VNC server with tail in the foreground
-#vncserver :1 -geometry 1280x800 -depth 24 -SecurityTypes None && tail -F ${HOME}/.vnc/*.log
-vncserver :1 -geometry 1280x800 -depth 24 -localhost no  -fg
+vncserver :1 -geometry 1366x768 -depth 24 -localhost no  -fg
