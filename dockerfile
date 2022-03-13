@@ -15,6 +15,8 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     tigervnc-standalone-server tigervnc-xorg-extension \
     pulseaudio \
     fonts-noto-color-emoji \
+    build-essential libssl-dev \
+    firefox \
     fish
 
 # Install visual code
@@ -52,7 +54,6 @@ RUN echo $USER 'ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 COPY start.sh /opt/
 RUN chmod +x /opt/start.sh
 
-
 USER ${USER}
 WORKDIR /home/${USER}
 
@@ -76,12 +77,14 @@ RUN anyenv init; exit 0
 RUN echo 'eval "$(anyenv init -)"' >> ~/.bash_profile
 RUN yes | anyenv install --init
 RUN anyenv install pyenv
+RUN anyenv install nodenv
 
 # fonts
 COPY others/fonts/UbuntuMono /home/${USER}/.fonts
 
 # desktop
-COPY lxterminal.desktop /home/${USER}/Desktop
+RUN mkdir ~/Desktop && sudo chown ${USER}:developer ~/Desktop
+COPY others/Desktop /home/${USER}/Desktop
 
 # fish
 RUN echo fish >> ~/.bashrc
@@ -90,7 +93,7 @@ RUN curl -sL https://git.io/fisher > .fisher && \
     source .fisher && \
     fisher install jorgebucaran/fisher && \
     fisher install oh-my-fish/theme-eclm
-
+RUN alias --save code='code --no-sandbox'
 
 # Command
 CMD ["/opt/start.sh"]

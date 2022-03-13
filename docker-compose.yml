@@ -24,5 +24,11 @@ services:
         source: ./dot_config/pcmanfm
         target: /home/teruntu/.config/pcmanfm
       - type: bind
+        source: ./dot_config/lxpanel
+        target: /home/teruntu/.config/lxpanel
+      - type: bind
+        source: ./dot_config/openbox
+        target: /home/teruntu/.config/openbox
+      - type: bind
         source: /Users/masushin/work
         target: /mnt/work
