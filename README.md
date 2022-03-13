@@ -17,3 +17,21 @@ RUN echo fish >> ~/.bashrc
 ```
 
 
+# 使い方
+
+（１） VNCクライアントが必要なので、適当に入手します。
+
+(2) 
+```
+$ docker-compose build
+```
+
+(3)
+```
+$ docker-compose up
+```
+VNCの接続待ちになります。接続に必要なuser/passwordはログに表示されていますので、
+それを確認して、 `127.0.0.1:5901` にVNCクライアントから接続します。
+
+
+
