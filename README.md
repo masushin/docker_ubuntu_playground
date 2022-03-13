@@ -21,17 +21,24 @@ RUN echo fish >> ~/.bashrc
 
 （１） VNCクライアントが必要なので、適当に入手します。
 
-(2) 
+(2) ビルド
 ```
 $ docker-compose build
 ```
 
-(3)
+(3) 起動
 ```
 $ docker-compose up
 ```
 VNCの接続待ちになります。接続に必要なuser/passwordはログに表示されていますので、
 それを確認して、 `127.0.0.1:5901` にVNCクライアントから接続します。
 
+
+# そのほか
+
+pulseaudioを入れてあります。勝手にMacの場合だとおもって書いているので、Mac側でpulseaudioサーバを起動してください。
+
+参考
+https://qiita.com/Mco7777/items/18e29b98ddbc2614169b
 
 
