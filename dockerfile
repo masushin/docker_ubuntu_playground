@@ -80,7 +80,8 @@ RUN anyenv install pyenv
 RUN anyenv install nodenv
 
 # fonts
-COPY others/fonts/UbuntuMono /home/${USER}/.fonts
+COPY others/fonts /home/${USER}/.fonts
+RUN sudo chown -R ${USER}:developer ~/.fonts
 
 # desktop
 RUN mkdir ~/Desktop && sudo chown ${USER}:developer ~/Desktop
