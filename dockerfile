@@ -57,10 +57,6 @@ RUN chmod +x /opt/start.sh
 USER ${USER}
 WORKDIR /home/${USER}
 
-RUN mkdir ~/.config && sudo chown ${USER}:developer ~/.config
-# Add alias for visual code
-RUN echo "alias code='code --no-sandbox'" >> ~/.bash_aliases
-
 # Install homebrew
 RUN echo ${PASSWD} | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /home/${USER}/.profile
@@ -79,9 +75,20 @@ RUN yes | anyenv install --init
 RUN anyenv install pyenv
 RUN anyenv install nodenv
 
+# configulation files
+RUN mkdir -p ~/.config && sudo chown ${USER}:developer ~/.config
+RUN mkdir ~/.config/mimeapps
+COPY dot_config/mimeapps/mimeapps.list /home/${USER}/.config/mimeapps
+RUN ln -s ~/.config/mimeapps/mimeapps.list ~/.config/mimeapps.list
+
+# Add alias for visual code
+RUN echo "alias code='code --no-sandbox'" >> ~/.bash_aliases
+
 # fonts
-# COPY others/fonts /home/${USER}/.fonts
-RUN mkdir ~/.fonts && cd ~/.fonts && wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/UbuntuMono.zip && unzip UbuntuMono.zip && rm UbuntuMono.zip
+RUN mkdir ~/.fonts && cd ~/.fonts && \
+    wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/UbuntuMono.zip && \
+    unzip UbuntuMono.zip && \
+    rm UbuntuMono.zip
 RUN sudo chown -R ${USER}:developer ~/.fonts
 
 # desktop
