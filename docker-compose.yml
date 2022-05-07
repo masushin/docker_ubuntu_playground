@@ -2,7 +2,7 @@ version: '3'
 services:
   teruntu:
     build: .
-    image: teruntu
+    image: teruntu-msx
     shm_size: 1g
     ports: 
       - 5901:5901
@@ -31,5 +31,5 @@ services:
         source: ./dot_config/openbox
         target: /home/teruntu/.config/openbox
       - type: bind
-        source: /Users/masushin/work
-        target: /mnt/work
+        source: ./work
+        target: /home/teruntu/work

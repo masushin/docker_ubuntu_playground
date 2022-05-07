@@ -14,19 +14,64 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     autocutsel \
     tigervnc-standalone-server tigervnc-xorg-extension \
     pulseaudio \
+    alsa-utils \
     fonts-noto-color-emoji \
     build-essential libssl-dev \
     firefox \
-    fish
+    fish 
+
+## Z88DK
+RUN sudo apt install -y build-essential \
+    dos2unix \
+    libboost-all-dev \
+    texinfo \
+    texi2html\
+    libxml2-dev \
+    subversion \
+    bison \
+    flex \
+    zlib1g-dev \
+    m4 \
+    libtemplate-perl \
+    libtemplate-plugin-yaml-perl  \
+    libfile-slurp-perl \
+    ragel \
+    re2c
+
+## openmsx
+RUN sudo apt install -y libsdl2-dev \
+    libsdl2-ttf-dev \
+    libfontconfig-dev \
+    libglew-dev \
+    libpng-dev \
+    libogg-dev \
+    tcl-dev \
+    libtheora-dev \
+    libvorbis-dev
+
 
 # Install visual code
 WORKDIR /opt
 RUN curl -L https://go.microsoft.com/fwlink/?LinkID=760868 -o vscode.deb && \
     apt install ./vscode.deb
 
-# Chrome
-# RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-# RUN apt install ./google-chrome-stable_current_amd64.deb
+## Z88DK
+WORKDIR /opt
+RUN git clone --recursive https://github.com/z88dk/z88dk.git && \
+    cd z88dk && \
+    export BUILD_SDCC=1 && \
+    export BUILD_SDCC_HTTP=1 && \
+    ./build.sh
+ENV PATH $PATH:/opt/z88dk/bin
+ENV ZCCCFG=/opt/z88dk/lib/config
+
+## openmsx
+WORKDIR /tmp
+RUN git clone https://github.com/openMSX/openMSX.git && \
+    cd openMSX && \
+    ./configure && \
+    make -j"$(nproc)" OPENMSX_TARGET_CPU=x86_64 OPENMSX_TARGET_OS=linux OPENMSX_FLAVOUR=opt staticbindist && \
+    make install
 
 # Locale
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime \
@@ -103,6 +148,7 @@ RUN curl -sL https://git.io/fisher > .fisher && \
     fisher install jorgebucaran/fisher && \
     fisher install oh-my-fish/theme-eclm
 RUN alias --save code='code --no-sandbox'
+
 
 # Command
 CMD ["/opt/start.sh"]
