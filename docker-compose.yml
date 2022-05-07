@@ -3,6 +3,7 @@ services:
   teruntu:
     build: .
     image: teruntu
+    shm_size: 1g
     ports: 
       - 5901:5901
     environment:
