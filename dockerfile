@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \ 
     lxde \
@@ -64,6 +64,7 @@ RUN git clone --recursive https://github.com/z88dk/z88dk.git && \
     ./build.sh
 ENV PATH $PATH:/opt/z88dk/bin
 ENV ZCCCFG=/opt/z88dk/lib/config
+ENV Z88DK_HOME=/opt/z88dk
 
 ## openmsx
 WORKDIR /tmp
@@ -72,6 +73,20 @@ RUN git clone https://github.com/openMSX/openMSX.git && \
     ./configure && \
     make -j"$(nproc)" OPENMSX_TARGET_CPU=x86_64 OPENMSX_TARGET_OS=linux OPENMSX_FLAVOUR=opt staticbindist && \
     make install
+
+# # openMSX debugger
+RUN sudo apt install -y qtbase5-dev \
+    qtbase5-dev-tools \
+    qtchooser \
+    qt5-qmake
+
+WORKDIR /opt
+RUN git clone https://github.com/openMSX/debugger
+COPY others/z88dk-symbol-read-hack.patch /opt/debugger
+RUN cd debugger && \
+    patch -p1 < z88dk-symbol-read-hack.patch && \
+    make -j"$(nproc)"
+
 
 # Locale
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime \

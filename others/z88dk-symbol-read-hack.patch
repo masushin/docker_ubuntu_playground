@@ -1,0 +1,129 @@
+diff --git a/src/DebuggerForm.cpp b/src/DebuggerForm.cpp
+index 1e601fd..4db788e 100644
+--- a/src/DebuggerForm.cpp
++++ b/src/DebuggerForm.cpp
+@@ -606,7 +606,7 @@ void DebuggerForm::createForm()
+ 
+ 	// add widgets
+ 	for (int i = 0; i < list.size(); ++i) {
+-		QStringList s = list.at(i).split(" ", Qt::SplitBehaviorFlags::SkipEmptyParts);
++		QStringList s = list.at(i).split(" ", QString::SplitBehavior::SkipEmptyParts);
+ 		// get widget
+ 		if ((dw = dockMan.findDockableWidget(s.at(0)))) {
+ 			if (s.at(1) == "D") {
+@@ -1431,7 +1431,7 @@ void DebuggerForm::setDebuggables(const QString& list)
+ 	debuggables.clear();
+ 
+ 	// process result string
+-	QStringList l = list.split(" ", Qt::SplitBehaviorFlags::SkipEmptyParts);
++	QStringList l = list.split(" ", QString::SplitBehavior::SkipEmptyParts);
+ 	for (int i = 0; i < l.size(); ++i) {
+ 		QString d = l[i];
+ 		// combine multiple words
+diff --git a/src/SymbolManager.cpp b/src/SymbolManager.cpp
+index 60c392c..fa1811c 100644
+--- a/src/SymbolManager.cpp
++++ b/src/SymbolManager.cpp
+@@ -128,6 +128,7 @@ void SymbolManager::addFile()
+ 	      << "asMSX 0.x symbol files (*.sym)"
+ 	      << "HiTech C symbol files (*.sym)"
+ 	      << "HiTech C link map files (*.map)"
++		  << "Z88DK map files (*.map)"
+ 	      << "NoICE command files (*.noi)"
+ 	      << "pasmo symbol files (*.symbol *.publics *.sys)";
+ 	d->setNameFilters(types);
+@@ -151,6 +152,8 @@ void SymbolManager::addFile()
+ 			read = symTable.readFile(n, SymbolTable::HTC_FILE);
+ 		} else if (f.startsWith("HiTech C link")) {
+ 			read = symTable.readFile(n, SymbolTable::LINKMAP_FILE);
++		} else if (f.startsWith("Z88DK map")) {
++			read = symTable.readFile(n, SymbolTable::Z88DK_FILE);
+ 		} else if (f.startsWith("NoICE")) {
+ 			read = symTable.readFile(n, SymbolTable::NOICE_FILE);
+ 		} else if (f.startsWith("pasmo")) {
+diff --git a/src/SymbolTable.cpp b/src/SymbolTable.cpp
+index 8c77f3a..a4f8353 100644
+--- a/src/SymbolTable.cpp
++++ b/src/SymbolTable.cpp
+@@ -185,7 +185,9 @@ bool SymbolTable::readFile(const QString& filename, FileType type)
+ 	if (type == DETECT_FILE) {
+ 		if (filename.toLower().endsWith(".map")) {
+ 			// HiTech link map file
+-			type = LINKMAP_FILE;
++			// TODO: Z88DK Hack
++			// type = LINKMAP_FILE;
++			type = Z88DK_FILE;
+ 		} else if (filename.toLower().endsWith(".sym")) {
+ 			// auto detect which sym file
+ 			QFile file(filename);
+@@ -230,6 +232,8 @@ bool SymbolTable::readFile(const QString& filename, FileType type)
+ 		return readASMSXFile(filename);
+ 	case HTC_FILE:
+ 		return readHTCFile(filename);
++	case Z88DK_FILE:
++		return readZ88DKFile(filename);
+ 	case LINKMAP_FILE:
+ 		return readLinkMapFile(filename);
+ 	case NOICE_FILE:
+@@ -286,7 +290,7 @@ bool SymbolTable::readSymbolFile(
+ 	QTextStream in(&file);
+ 	while (!in.atEnd()) {
+ 		QString line = in.readLine();
+-		QStringList l = line.split(equ, Qt::SplitBehaviorFlags::KeepEmptyParts, Qt::CaseInsensitive);
++		QStringList l = line.split(equ, QString::SplitBehavior::KeepEmptyParts, Qt::CaseInsensitive);
+ 		if (l.size() != 2) continue;
+ 		if (auto value = parseValue(l.at(1))) {
+ 			auto* sym = new Symbol(l.at(0), *value);
+@@ -420,6 +424,32 @@ bool SymbolTable::readNoICEFile(const QString& filename)
+ 	return true;
+ }
+ 
++bool SymbolTable::readZ88DKFile(const QString& filename)
++{
++	QFile file(filename);
++	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
++		return false;
++	}
++
++	appendFile(filename, Z88DK_FILE);
++	QTextStream in(&file);
++	while (!in.atEnd()) {
++		QString line = in.readLine();
++		QStringList l = line.split(QRegExp("(\t+)|( +)"));
++		if (l.size() < 3) continue;
++		std::optional<int> value;
++		// ex. $0001
++		// printf("@@@ %s", l.at(2).mid(1,4).toStdString().c.str());
++		if (value = parseValue("0x" + l.at(2).mid(1,4))) continue;
++		// hack ex. $FFFFFFFFFFFF03B6
++		if (value == 0xffff) continue;
++		auto* sym = new Symbol(l.at(0), *value);
++		sym->setSource(&symbolFiles.back().fileName);
++		add(sym);
++	}
++	return true;
++} 
++
+ bool SymbolTable::readLinkMapFile(const QString& filename)
+ {
+ 	const QString magic("Machine type");
+diff --git a/src/SymbolTable.h b/src/SymbolTable.h
+index 7a4f491..5b7ad72 100644
+--- a/src/SymbolTable.h
++++ b/src/SymbolTable.h
+@@ -82,6 +82,7 @@ public:
+ 		ASMSX_FILE,
+ 		LINKMAP_FILE,
+ 		HTC_FILE,
++		Z88DK_FILE,
+ 		NOICE_FILE,
+ 		PASMO_FILE
+ 	};
+@@ -129,6 +130,7 @@ private:
+ 	bool readASMSXFile(const QString& filename);
+ 	bool readSJASMFile(const QString& filename);
+ 	bool readHTCFile(const QString& filename);
++	bool readZ88DKFile(const QString& filename);
+ 	bool readNoICEFile(const QString& filename);
+ 	bool readLinkMapFile(const QString& filename);
+ 	bool readPASMOFile(const QString& filename);
