@@ -87,6 +87,8 @@ RUN cd debugger && \
     patch -p1 < z88dk-symbol-read-hack.patch && \
     make -j"$(nproc)"
 
+RUN sudo apt install -y ibus-mozc
+
 
 # Locale
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime \
